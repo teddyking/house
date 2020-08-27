@@ -1,3 +1,7 @@
 domain: teddyking.github.io
 repo: github.com/teddyking/house
+resources:
+- group: house
+  kind: Search
+  version: v1alpha1
 version: "2"

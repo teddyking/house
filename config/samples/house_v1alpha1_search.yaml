@@ -1,0 +1,7 @@
+apiVersion: house.teddyking.github.io/v1alpha1
+kind: Search
+metadata:
+  name: search-sample
+spec:
+  # Add fields here
+  foo: bar
