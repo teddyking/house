@@ -36,17 +36,24 @@ spec:
           spec:
             description: SearchSpec defines the desired state of Search
             properties:
-              foo:
-                description: Foo is an example field of Search. Edit Search_types.go
-                  to remove/update
+              url:
                 type: string
+            required:
+            - url
             type: object
           status:
             description: SearchStatus defines the observed state of Search
+            properties:
+              numResults:
+                type: integer
+            required:
+            - numResults
             type: object
         type: object
     served: true
     storage: true
+    subresources:
+      status: {}
 status:
   acceptedNames:
     kind: ""

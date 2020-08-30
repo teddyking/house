@@ -21,27 +21,57 @@ import (
 
 	"github.com/go-logr/logr"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
+	"github.com/teddyking/house/api/v1alpha1"
 	housev1alpha1 "github.com/teddyking/house/api/v1alpha1"
 )
+
+//go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 . Searcher
+//go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 . SearchRepo
+
+type Searcher interface {
+	NumResults(url string) (int, error)
+}
+
+type SearchRepo interface {
+	Get(ctx context.Context, namespacedName types.NamespacedName) (*v1alpha1.Search, error)
+	UpdateStatus(ctx context.Context, search *v1alpha1.Search) error
+}
 
 // SearchReconciler reconciles a Search object
 type SearchReconciler struct {
 	client.Client
 	Log    logr.Logger
 	Scheme *runtime.Scheme
+
+	Searcher   Searcher
+	SearchRepo SearchRepo
 }
 
 // +kubebuilder:rbac:groups=house.teddyking.github.io,resources=searches,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=house.teddyking.github.io,resources=searches/status,verbs=get;update;patch
 
 func (r *SearchReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
-	_ = context.Background()
+	ctx := context.Background()
 	_ = r.Log.WithValues("search", req.NamespacedName)
 
-	// your logic here
+	search, err := r.SearchRepo.Get(ctx, req.NamespacedName)
+	if err != nil {
+		return ctrl.Result{}, client.IgnoreNotFound(err)
+	}
+
+	numResults, err := r.Searcher.NumResults(search.Spec.URL)
+	if err != nil {
+		return ctrl.Result{}, err
+	}
+
+	search.Status.NumResults = numResults
+	if err := r.SearchRepo.UpdateStatus(ctx, search); err != nil {
+		return ctrl.Result{}, err
+	}
 
 	return ctrl.Result{}, nil
 }

@@ -28,6 +28,7 @@ import (
 
 	housev1alpha1 "github.com/teddyking/house/api/v1alpha1"
 	"github.com/teddyking/house/controllers"
+	"github.com/teddyking/house/pkg/repository"
 	// +kubebuilder:scaffold:imports
 )
 
@@ -46,7 +47,7 @@ func init() {
 func main() {
 	var metricsAddr string
 	var enableLeaderElection bool
-	flag.StringVar(&metricsAddr, "metrics-addr", ":8080", "The address the metric endpoint binds to.")
+	flag.StringVar(&metricsAddr, "metrics-addr", "localhost:8080", "The address the metric endpoint binds to.")
 	flag.BoolVar(&enableLeaderElection, "enable-leader-election", false,
 		"Enable leader election for controller manager. "+
 			"Enabling this will ensure there is only one active controller manager.")
@@ -67,9 +68,11 @@ func main() {
 	}
 
 	if err = (&controllers.SearchReconciler{
-		Client: mgr.GetClient(),
-		Log:    ctrl.Log.WithName("controllers").WithName("Search"),
-		Scheme: mgr.GetScheme(),
+		Client:     mgr.GetClient(),
+		Log:        ctrl.Log.WithName("controllers").WithName("Search"),
+		Scheme:     mgr.GetScheme(),
+		Searcher:   searcher{},
+		SearchRepo: &repository.Search{Client: mgr.GetClient()},
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "Search")
 		os.Exit(1)
@@ -81,4 +84,10 @@ func main() {
 		setupLog.Error(err, "problem running manager")
 		os.Exit(1)
 	}
+}
+
+type searcher struct{}
+
+func (s searcher) NumResults(url string) (int, error) {
+	return 5, nil
 }

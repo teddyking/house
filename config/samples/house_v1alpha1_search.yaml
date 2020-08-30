@@ -4,4 +4,4 @@ metadata:
   name: search-sample
 spec:
   # Add fields here
-  foo: bar
+  url: bar

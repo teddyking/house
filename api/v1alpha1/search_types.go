@@ -20,25 +20,8 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
-// NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
-
-// SearchSpec defines the desired state of Search
-type SearchSpec struct {
-	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
-
-	// Foo is an example field of Search. Edit Search_types.go to remove/update
-	Foo string `json:"foo,omitempty"`
-}
-
-// SearchStatus defines the observed state of Search
-type SearchStatus struct {
-	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
-}
-
 // +kubebuilder:object:root=true
+// +kubebuilder:subresource:status
 
 // Search is the Schema for the searches API
 type Search struct {
@@ -49,8 +32,17 @@ type Search struct {
 	Status SearchStatus `json:"status,omitempty"`
 }
 
-// +kubebuilder:object:root=true
+// SearchSpec defines the desired state of Search
+type SearchSpec struct {
+	URL string `json:"url"`
+}
 
+// SearchStatus defines the observed state of Search
+type SearchStatus struct {
+	NumResults int `json:"numResults"`
+}
+
+// +kubebuilder:object:root=true
 // SearchList contains a list of Search
 type SearchList struct {
 	metav1.TypeMeta `json:",inline"`
