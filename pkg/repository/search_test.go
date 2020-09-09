@@ -78,48 +78,50 @@ var _ = Describe("Search", func() {
 				Expect(apierrors.IsNotFound(returnedErr)).To(BeTrue())
 			})
 		})
+	})
 
-		Describe("UpdateStatus", func() {
-			var (
-				search         *v1alpha1.Search
-				namespacedName types.NamespacedName
+	Describe("UpdateStatus", func() {
+		var (
+			search         *v1alpha1.Search
+			namespacedName types.NamespacedName
 
-				fakeClient client.Client
-				repo       *Search
-			)
+			fakeClient client.Client
+			repo       *Search
+		)
 
-			BeforeEach(func() {
-				scheme := runtime.NewScheme()
-				_ = v1alpha1.AddToScheme(scheme)
+		BeforeEach(func() {
+			scheme := runtime.NewScheme()
+			_ = v1alpha1.AddToScheme(scheme)
 
-				name := "search-1"
-				namespace := "namespace-1"
-				namespacedName = types.NamespacedName{Name: name, Namespace: namespace}
+			name := "search-1"
+			namespace := "namespace-1"
+			namespacedName = types.NamespacedName{Name: name, Namespace: namespace}
 
-				search = &v1alpha1.Search{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      name,
-						Namespace: namespace,
-					},
-					Spec:   v1alpha1.SearchSpec{},
-					Status: v1alpha1.SearchStatus{},
-				}
+			search = &v1alpha1.Search{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      name,
+					Namespace: namespace,
+				},
+				Spec:   v1alpha1.SearchSpec{},
+				Status: v1alpha1.SearchStatus{},
+			}
 
-				fakeClient = fake.NewFakeClientWithScheme(scheme)
-				Expect(fakeClient.Create(context.TODO(), search)).To(Succeed())
+			fakeClient = fake.NewFakeClientWithScheme(scheme)
+			Expect(fakeClient.Create(context.TODO(), search)).To(Succeed())
 
-				repo = &Search{Client: fakeClient}
-			})
+			repo = &Search{Client: fakeClient}
+		})
 
-			It("updates the Search status in the k8s API", func() {
-				search.Status.NumResults = 5
-				Expect(repo.UpdateStatus(context.TODO(), search)).To(Succeed())
+		It("updates the Search status in the k8s API", func() {
+			search.Status.NumResults = 5
+			search.Status.ObservedGeneration = 2
+			Expect(repo.UpdateStatus(context.TODO(), search)).To(Succeed())
 
-				updatedSearch := &v1alpha1.Search{}
-				Expect(fakeClient.Get(context.TODO(), namespacedName, updatedSearch)).To(Succeed())
+			updatedSearch := &v1alpha1.Search{}
+			Expect(fakeClient.Get(context.TODO(), namespacedName, updatedSearch)).To(Succeed())
 
-				Expect(updatedSearch.Status.NumResults).To(Equal(5))
-			})
+			Expect(updatedSearch.Status.NumResults).To(Equal(5))
+			Expect(updatedSearch.Status.ObservedGeneration).To(BeEquivalentTo(2))
 		})
 	})
 })
