@@ -27,18 +27,24 @@ import (
 
 	"github.com/teddyking/house/api/v1alpha1"
 	housev1alpha1 "github.com/teddyking/house/api/v1alpha1"
+	htypes "github.com/teddyking/house/pkg/types"
 )
 
-//go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 . Searcher
+//go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 . Scraper
 //go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 . SearchRepo
+//go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 . HouseRepo
 
-type Searcher interface {
-	NumResults(url string) (int, error)
+type Scraper interface {
+	Properties(url string) ([]htypes.House, error)
 }
 
 type SearchRepo interface {
 	Get(ctx context.Context, namespacedName types.NamespacedName) (*v1alpha1.Search, error)
 	UpdateStatus(ctx context.Context, search *v1alpha1.Search) error
+}
+
+type HouseRepo interface {
+	Create(ctx context.Context, house htypes.House) error
 }
 
 // SearchReconciler reconciles a Search object
@@ -47,11 +53,14 @@ type SearchReconciler struct {
 	Log    logr.Logger
 	Scheme *runtime.Scheme
 
-	Searcher   Searcher
+	Scraper Scraper
+
 	SearchRepo SearchRepo
+	HouseRepo  HouseRepo
 }
 
 // +kubebuilder:rbac:groups=house.teddyking.github.io,resources=searches,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=house.teddyking.github.io,resources=houses,verbs=create
 // +kubebuilder:rbac:groups=house.teddyking.github.io,resources=searches/status,verbs=get;update;patch
 
 func (r *SearchReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
@@ -63,12 +72,20 @@ func (r *SearchReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
 
-	numResults, err := r.Searcher.NumResults(search.Spec.URL)
+	properties, err := r.Scraper.Properties(search.Spec.URL)
 	if err != nil {
 		return ctrl.Result{}, err
 	}
 
-	search.Status.NumResults = numResults
+	for _, house := range properties {
+		if err := r.HouseRepo.Create(ctx, house); err != nil {
+			return ctrl.Result{}, err
+		}
+	}
+
+	search.Status.NumResults = len(properties)
+	search.Status.ObservedGeneration = search.Generation
+
 	if err := r.SearchRepo.UpdateStatus(ctx, search); err != nil {
 		return ctrl.Result{}, err
 	}

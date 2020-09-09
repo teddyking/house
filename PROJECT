@@ -4,4 +4,7 @@ resources:
 - group: house
   kind: Search
   version: v1alpha1
+- group: house
+  kind: House
+  version: v1alpha1
 version: "2"

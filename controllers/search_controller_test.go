@@ -16,13 +16,15 @@ import (
 	"github.com/teddyking/house/api/v1alpha1"
 	. "github.com/teddyking/house/controllers"
 	"github.com/teddyking/house/controllers/controllersfakes"
+	htypes "github.com/teddyking/house/pkg/types"
 )
 
 var _ = Describe("Search Controller", func() {
 	Describe("Reconcile - Create", func() {
 		var (
 			fakeSearchRepo *controllersfakes.FakeSearchRepo
-			fakeSearcher   *controllersfakes.FakeSearcher
+			fakeHouseRepo  *controllersfakes.FakeHouseRepo
+			fakeScraper    *controllersfakes.FakeScraper
 
 			namespacedName types.NamespacedName
 
@@ -36,8 +38,9 @@ var _ = Describe("Search Controller", func() {
 
 			fakeClient := fake.NewFakeClientWithScheme(scheme)
 			fakeLogger := testing.NullLogger{}
-			fakeSearcher = &controllersfakes.FakeSearcher{}
+			fakeScraper = &controllersfakes.FakeScraper{}
 			fakeSearchRepo = &controllersfakes.FakeSearchRepo{}
+			fakeHouseRepo = &controllersfakes.FakeHouseRepo{}
 
 			name := "search-1"
 			namespace := "namespace-1"
@@ -45,8 +48,9 @@ var _ = Describe("Search Controller", func() {
 
 			search := &v1alpha1.Search{
 				ObjectMeta: metav1.ObjectMeta{
-					Name:      name,
-					Namespace: namespace,
+					Name:       name,
+					Namespace:  namespace,
+					Generation: 1,
 				},
 				Spec: v1alpha1.SearchSpec{
 					URL: "url-1",
@@ -57,13 +61,15 @@ var _ = Describe("Search Controller", func() {
 			Expect(fakeClient.Create(context.TODO(), search)).To(Succeed())
 
 			fakeSearchRepo.GetReturns(search, nil)
-			fakeSearcher.NumResultsReturns(1, nil)
+			fakeScraper.PropertiesReturns([]htypes.House{{Price: "price-1", Postcode: "postcode-1"}}, nil)
+			fakeHouseRepo.CreateReturns(nil)
 
 			reconciler = &SearchReconciler{
 				Client:     fakeClient,
 				Log:        fakeLogger,
-				Searcher:   fakeSearcher,
+				Scraper:    fakeScraper,
 				SearchRepo: fakeSearchRepo,
+				HouseRepo:  fakeHouseRepo,
 				Scheme:     scheme,
 			}
 		})
@@ -83,11 +89,19 @@ var _ = Describe("Search Controller", func() {
 			Expect(passedKey).To(Equal(namespacedName))
 		})
 
-		It("fetches the number of results", func() {
-			Expect(fakeSearcher.NumResultsCallCount()).To(Equal(1))
+		It("scrapes properties using the search URL", func() {
+			Expect(fakeScraper.PropertiesCallCount()).To(Equal(1))
 
-			passedURL := fakeSearcher.NumResultsArgsForCall(0)
+			passedURL := fakeScraper.PropertiesArgsForCall(0)
 			Expect(passedURL).To(Equal("url-1"))
+		})
+
+		It("creates House CRs from the scraped properties", func() {
+			Expect(fakeHouseRepo.CreateCallCount()).To(Equal(1))
+
+			_, passedHouse := fakeHouseRepo.CreateArgsForCall(0)
+			Expect(passedHouse.Price).To(Equal("price-1"))
+			Expect(passedHouse.Postcode).To(Equal("postcode-1"))
 		})
 
 		It("updates the Search status with the number of results", func() {
@@ -95,6 +109,13 @@ var _ = Describe("Search Controller", func() {
 
 			_, passedSearch := fakeSearchRepo.UpdateStatusArgsForCall(0)
 			Expect(passedSearch.Status.NumResults).To(Equal(1))
+		})
+
+		It("updates the Search status with the observedGeneration", func() {
+			Expect(fakeSearchRepo.UpdateStatusCallCount()).To(Equal(1))
+
+			_, passedSearch := fakeSearchRepo.UpdateStatusArgsForCall(0)
+			Expect(passedSearch.Status.ObservedGeneration).To(BeEquivalentTo(1))
 		})
 
 		When("there is an error fetching the Search", func() {
@@ -107,13 +128,23 @@ var _ = Describe("Search Controller", func() {
 			})
 		})
 
-		When("there is an error fetching the number of results", func() {
+		When("there is an error scraping the properties", func() {
 			BeforeEach(func() {
-				fakeSearcher.NumResultsReturns(0, errors.New("error-fetching-num-results"))
+				fakeScraper.PropertiesReturns([]htypes.House{}, errors.New("error-scraping-properties"))
 			})
 
 			It("returns the error", func() {
-				Expect(reconcileErr).To(MatchError("error-fetching-num-results"))
+				Expect(reconcileErr).To(MatchError("error-scraping-properties"))
+			})
+		})
+
+		When("there is an error creating a house", func() {
+			BeforeEach(func() {
+				fakeHouseRepo.CreateReturns(errors.New("error-creating-house"))
+			})
+
+			It("returns the error", func() {
+				Expect(reconcileErr).To(MatchError("error-creating-house"))
 			})
 		})
 

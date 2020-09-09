@@ -1,0 +1,7 @@
+apiVersion: house.teddyking.github.io/v1alpha1
+kind: House
+metadata:
+  name: house-sample
+spec:
+  # Add fields here
+  foo: bar

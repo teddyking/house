@@ -20,37 +20,39 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// +kubebuilder:object:root=true
-// +kubebuilder:subresource:status
+// HouseSpec defines the desired state of House
+type HouseSpec struct {
+	Price       string `json:"price"`
+	OfferType   string `json:"offerType"`
+	Description string `json:"description"`
+	Postcode    string `json:"postcode"`
+	URL         string `json:"url"`
+}
 
-// Search is the Schema for the searches API
-type Search struct {
+// HouseStatus defines the observed state of House
+type HouseStatus struct {
+}
+
+// +kubebuilder:object:root=true
+
+// House is the Schema for the houses API
+type House struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   SearchSpec   `json:"spec,omitempty"`
-	Status SearchStatus `json:"status,omitempty"`
-}
-
-// SearchSpec defines the desired state of Search
-type SearchSpec struct {
-	URL string `json:"url"`
-}
-
-// SearchStatus defines the observed state of Search
-type SearchStatus struct {
-	ObservedGeneration int64 `json:"observedGeneration"`
-	NumResults         int   `json:"numResults"`
+	Spec   HouseSpec   `json:"spec,omitempty"`
+	Status HouseStatus `json:"status,omitempty"`
 }
 
 // +kubebuilder:object:root=true
-// SearchList contains a list of Search
-type SearchList struct {
+
+// HouseList contains a list of House
+type HouseList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
-	Items           []Search `json:"items"`
+	Items           []House `json:"items"`
 }
 
 func init() {
-	SchemeBuilder.Register(&Search{}, &SearchList{})
+	SchemeBuilder.Register(&House{}, &HouseList{})
 }

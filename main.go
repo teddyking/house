@@ -29,6 +29,7 @@ import (
 	housev1alpha1 "github.com/teddyking/house/api/v1alpha1"
 	"github.com/teddyking/house/controllers"
 	"github.com/teddyking/house/pkg/repository"
+	"github.com/teddyking/house/pkg/scrape"
 	// +kubebuilder:scaffold:imports
 )
 
@@ -39,7 +40,6 @@ var (
 
 func init() {
 	_ = clientgoscheme.AddToScheme(scheme)
-
 	_ = housev1alpha1.AddToScheme(scheme)
 	// +kubebuilder:scaffold:scheme
 }
@@ -71,8 +71,9 @@ func main() {
 		Client:     mgr.GetClient(),
 		Log:        ctrl.Log.WithName("controllers").WithName("Search"),
 		Scheme:     mgr.GetScheme(),
-		Searcher:   searcher{},
+		Scraper:    &scrape.RightMove{},
 		SearchRepo: &repository.Search{Client: mgr.GetClient()},
+		HouseRepo:  &repository.House{Client: mgr.GetClient()},
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "Search")
 		os.Exit(1)
@@ -84,10 +85,4 @@ func main() {
 		setupLog.Error(err, "problem running manager")
 		os.Exit(1)
 	}
-}
-
-type searcher struct{}
-
-func (s searcher) NumResults(url string) (int, error) {
-	return 5, nil
 }

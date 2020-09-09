@@ -1,21 +1,13 @@
-
----
+# permissions for end users to edit houses.
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  creationTimestamp: null
-  name: manager-role
+  name: house-editor-role
 rules:
 - apiGroups:
   - house.teddyking.github.io
   resources:
   - houses
-  verbs:
-  - create
-- apiGroups:
-  - house.teddyking.github.io
-  resources:
-  - searches
   verbs:
   - create
   - delete
@@ -27,8 +19,6 @@ rules:
 - apiGroups:
   - house.teddyking.github.io
   resources:
-  - searches/status
+  - houses/status
   verbs:
   - get
-  - patch
-  - update

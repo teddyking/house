@@ -23,5 +23,5 @@ func (s *Search) Get(ctx context.Context, namespacedName types.NamespacedName) (
 }
 
 func (s *Search) UpdateStatus(ctx context.Context, search *v1alpha1.Search) error {
-	return s.Client.Status().Update(ctx, search)
+	return s.Status().Update(ctx, search)
 }

@@ -6,20 +6,18 @@ metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.2.9
   creationTimestamp: null
-  name: searches.house.teddyking.github.io
+  name: houses.house.teddyking.github.io
 spec:
   group: house.teddyking.github.io
   names:
-    kind: Search
-    listKind: SearchList
-    plural: searches
-    singular: search
+    kind: House
+    listKind: HouseList
+    plural: houses
+    singular: house
   scope: Namespaced
-  subresources:
-    status: {}
   validation:
     openAPIV3Schema:
-      description: Search is the Schema for the searches API
+      description: House is the Schema for the houses API
       properties:
         apiVersion:
           description: 'APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
@@ -30,24 +28,27 @@ spec:
         metadata:
           type: object
         spec:
-          description: SearchSpec defines the desired state of Search
+          description: HouseSpec defines the desired state of House
           properties:
+            description:
+              type: string
+            offerType:
+              type: string
+            postcode:
+              type: string
+            price:
+              type: string
             url:
               type: string
           required:
+          - description
+          - offerType
+          - postcode
+          - price
           - url
           type: object
         status:
-          description: SearchStatus defines the observed state of Search
-          properties:
-            numResults:
-              type: integer
-            observedGeneration:
-              format: int64
-              type: integer
-          required:
-          - numResults
-          - observedGeneration
+          description: HouseStatus defines the observed state of House
           type: object
       type: object
   version: v1alpha1
