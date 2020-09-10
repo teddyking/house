@@ -35,7 +35,7 @@ var _ = Describe("Search", func() {
 			_ = v1alpha1.AddToScheme(scheme)
 
 			name := "search-1"
-			namespace := "namespace-1"
+			namespace := "default"
 			namespacedName = types.NamespacedName{Name: name, Namespace: namespace}
 
 			search = &v1alpha1.Search{
@@ -94,7 +94,7 @@ var _ = Describe("Search", func() {
 			_ = v1alpha1.AddToScheme(scheme)
 
 			name := "search-1"
-			namespace := "namespace-1"
+			namespace := "default"
 			namespacedName = types.NamespacedName{Name: name, Namespace: namespace}
 
 			search = &v1alpha1.Search{
