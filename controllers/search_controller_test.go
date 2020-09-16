@@ -42,8 +42,9 @@ var _ = Describe("Search Controller", func() {
 
 			namespacedName types.NamespacedName
 
-			reconciler   *SearchReconciler
-			reconcileErr error
+			reconciler      *SearchReconciler
+			reconcileResult ctrl.Result
+			reconcileErr    error
 		)
 
 		BeforeEach(func() {
@@ -76,7 +77,7 @@ var _ = Describe("Search Controller", func() {
 
 			fakeSearchRepo.GetReturns(search, nil)
 			fakeScraper.PropertiesReturns([]htypes.House{{Price: "price-1", Postcode: "postcode-1"}}, nil)
-			fakeHouseRepo.CreateReturns(nil)
+			fakeHouseRepo.UpsertReturns(nil)
 
 			reconciler = &SearchReconciler{
 				Client:     fakeClient,
@@ -89,7 +90,7 @@ var _ = Describe("Search Controller", func() {
 		})
 
 		JustBeforeEach(func() {
-			_, reconcileErr = reconciler.Reconcile(ctrl.Request{NamespacedName: namespacedName})
+			reconcileResult, reconcileErr = reconciler.Reconcile(ctrl.Request{NamespacedName: namespacedName})
 		})
 
 		It("reconciles successfully", func() {
@@ -110,10 +111,10 @@ var _ = Describe("Search Controller", func() {
 			Expect(passedURL).To(Equal("url-1"))
 		})
 
-		It("creates House CRs from the scraped properties", func() {
-			Expect(fakeHouseRepo.CreateCallCount()).To(Equal(1))
+		It("upserts House CRs from the scraped properties", func() {
+			Expect(fakeHouseRepo.UpsertCallCount()).To(Equal(1))
 
-			_, passedHouse := fakeHouseRepo.CreateArgsForCall(0)
+			_, passedHouse := fakeHouseRepo.UpsertArgsForCall(0)
 			Expect(passedHouse.Price).To(Equal("price-1"))
 			Expect(passedHouse.Postcode).To(Equal("postcode-1"))
 		})
@@ -130,6 +131,10 @@ var _ = Describe("Search Controller", func() {
 
 			_, passedSearch := fakeSearchRepo.UpdateStatusArgsForCall(0)
 			Expect(passedSearch.Status.ObservedGeneration).To(BeEquivalentTo(1))
+		})
+
+		It("reschedules another reconcile", func() {
+			Expect(reconcileResult.RequeueAfter.Hours()).To(BeEquivalentTo(1))
 		})
 
 		When("there is an error fetching the Search", func() {
@@ -154,7 +159,7 @@ var _ = Describe("Search Controller", func() {
 
 		When("there is an error creating a house", func() {
 			BeforeEach(func() {
-				fakeHouseRepo.CreateReturns(errors.New("error-creating-house"))
+				fakeHouseRepo.UpsertReturns(errors.New("error-creating-house"))
 			})
 
 			It("returns the error", func() {

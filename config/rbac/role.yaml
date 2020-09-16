@@ -12,6 +12,7 @@ rules:
   - houses
   verbs:
   - create
+  - update
 - apiGroups:
   - house.teddyking.github.io
   resources:

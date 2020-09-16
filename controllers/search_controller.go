@@ -16,6 +16,7 @@ package controllers
 
 import (
 	"context"
+	"time"
 
 	"github.com/go-logr/logr"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -42,7 +43,7 @@ type SearchRepo interface {
 }
 
 type HouseRepo interface {
-	Create(ctx context.Context, house htypes.House) error
+	Upsert(ctx context.Context, house htypes.House) error
 }
 
 // SearchReconciler reconciles a Search object
@@ -58,12 +59,14 @@ type SearchReconciler struct {
 }
 
 // +kubebuilder:rbac:groups=house.teddyking.github.io,resources=searches,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups=house.teddyking.github.io,resources=houses,verbs=create
+// +kubebuilder:rbac:groups=house.teddyking.github.io,resources=houses,verbs=create;update
 // +kubebuilder:rbac:groups=house.teddyking.github.io,resources=searches/status,verbs=get;update;patch
 
 func (r *SearchReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	ctx := context.Background()
-	_ = r.Log.WithValues("search", req.NamespacedName)
+	r.Log = r.Log.WithValues("search", req.NamespacedName)
+
+	r.Log.Info("Reconcile - start")
 
 	search, err := r.SearchRepo.Get(ctx, req.NamespacedName)
 	if err != nil {
@@ -76,7 +79,7 @@ func (r *SearchReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	}
 
 	for _, house := range properties {
-		if err := r.HouseRepo.Create(ctx, house); err != nil {
+		if err := r.HouseRepo.Upsert(ctx, house); err != nil {
 			return ctrl.Result{}, err
 		}
 	}
@@ -88,7 +91,9 @@ func (r *SearchReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 		return ctrl.Result{}, err
 	}
 
-	return ctrl.Result{}, nil
+	r.Log.Info("Reconcile - end")
+
+	return ctrl.Result{RequeueAfter: time.Hour}, nil
 }
 
 func (r *SearchReconciler) SetupWithManager(mgr ctrl.Manager) error {

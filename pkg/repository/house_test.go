@@ -17,7 +17,7 @@ import (
 )
 
 var _ = Describe("House", func() {
-	Describe("Create", func() {
+	Describe("Upsert", func() {
 		var (
 			fakeClient client.Client
 			repo       *House
@@ -42,7 +42,7 @@ var _ = Describe("House", func() {
 				URL:         "url-1",
 			}
 
-			Expect(repo.Create(context.TODO(), house)).To(Succeed())
+			Expect(repo.Upsert(context.TODO(), house)).To(Succeed())
 
 			createdHouse := &v1alpha1.House{}
 			Expect(fakeClient.Get(
@@ -60,21 +60,47 @@ var _ = Describe("House", func() {
 		})
 
 		When("the House already exists in the k8s API", func() {
+			var house *v1alpha1.House
+
 			BeforeEach(func() {
-				house := &v1alpha1.House{
+				house = &v1alpha1.House{
 					ObjectMeta: metav1.ObjectMeta{
 						Name:      "house-1",
 						Namespace: "default",
 					},
-					Spec:   v1alpha1.HouseSpec{},
+					Spec: v1alpha1.HouseSpec{
+						Price: "price-1",
+					},
 					Status: v1alpha1.HouseStatus{},
 				}
 
 				Expect(fakeClient.Create(context.TODO(), house)).To(Succeed())
 			})
 
-			It("does nothing", func() {
-				Expect(repo.Create(context.TODO(), htypes.House{ID: "house-1"})).To(Succeed())
+			It("updates the House in the k8s API", func() {
+				Expect(repo.Upsert(context.TODO(),
+					htypes.House{
+						ID:          "house-1",
+						Price:       "price-2",
+						OfferType:   "offer-type-2",
+						Description: "description-2",
+						Postcode:    "postcode-2",
+						URL:         "url-2",
+					})).To(Succeed())
+
+				updatedHouse := &v1alpha1.House{}
+				Expect(fakeClient.Get(
+					context.TODO(),
+					types.NamespacedName{Name: "house-1", Namespace: "default"},
+					updatedHouse,
+				)).To(Succeed())
+
+				Expect(updatedHouse.Name).To(Equal("house-1"))
+				Expect(updatedHouse.Spec.Price).To(Equal("price-2"))
+				Expect(updatedHouse.Spec.OfferType).To(Equal("offer-type-2"))
+				Expect(updatedHouse.Spec.Description).To(Equal("description-2"))
+				Expect(updatedHouse.Spec.Postcode).To(Equal("postcode-2"))
+				Expect(updatedHouse.Spec.URL).To(Equal("url-2"))
 			})
 		})
 	})

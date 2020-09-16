@@ -15,9 +15,11 @@ type House struct {
 	client.Client
 }
 
-func (h *House) Create(ctx context.Context, house htypes.House) error {
-	err := h.Get(ctx, types.NamespacedName{Name: house.ID, Namespace: "default"}, &v1alpha1.House{})
+func (h *House) Upsert(ctx context.Context, house htypes.House) error {
+	currentHouse := &v1alpha1.House{}
+	err := h.Get(ctx, types.NamespacedName{Name: house.ID, Namespace: "default"}, currentHouse)
 
+	// CREATE
 	if apierrors.IsNotFound(err) {
 		return h.Client.Create(ctx, &v1alpha1.House{
 			ObjectMeta: metav1.ObjectMeta{
@@ -34,5 +36,12 @@ func (h *House) Create(ctx context.Context, house htypes.House) error {
 		})
 	}
 
-	return err
+	// UPDATE
+	currentHouse.Spec.Price = house.Price
+	currentHouse.Spec.OfferType = house.OfferType
+	currentHouse.Spec.Description = house.Description
+	currentHouse.Spec.Postcode = house.Postcode
+	currentHouse.Spec.URL = house.URL
+
+	return h.Client.Update(ctx, currentHouse)
 }

@@ -24,6 +24,7 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
+	"github.com/gocolly/colly"
 	housev1alpha1 "github.com/teddyking/house/api/v1alpha1"
 	"github.com/teddyking/house/controllers"
 	"github.com/teddyking/house/pkg/repository"
@@ -65,13 +66,16 @@ func main() {
 		os.Exit(1)
 	}
 
+	k8sClient := mgr.GetClient()
+	collyCollector := colly.NewCollector(colly.AllowURLRevisit())
+
 	if err = (&controllers.SearchReconciler{
-		Client:     mgr.GetClient(),
+		Client:     k8sClient,
 		Log:        ctrl.Log.WithName("controllers").WithName("Search"),
 		Scheme:     mgr.GetScheme(),
-		Scraper:    &scrape.RightMove{},
-		SearchRepo: &repository.Search{Client: mgr.GetClient()},
-		HouseRepo:  &repository.House{Client: mgr.GetClient()},
+		Scraper:    &scrape.RightMove{Collector: collyCollector},
+		SearchRepo: &repository.Search{Client: k8sClient},
+		HouseRepo:  &repository.House{Client: k8sClient},
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "Search")
 		os.Exit(1)
