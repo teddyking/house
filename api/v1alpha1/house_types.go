@@ -32,6 +32,10 @@ type HouseStatus struct {
 }
 
 // +kubebuilder:object:root=true
+// +kubebuilder:printcolumn:name="Price",type="string",JSONPath=".spec.price"
+// +kubebuilder:printcolumn:name="Postcode",type="string",JSONPath=".spec.postcode"
+// +kubebuilder:printcolumn:name="Description",type="string",JSONPath=".spec.description"
+// +kubebuilder:printcolumn:name="URL",type="string",JSONPath=".spec.url"
 
 // House is the Schema for the houses API
 type House struct {
