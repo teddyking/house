@@ -36,10 +36,20 @@ spec:
           spec:
             description: SearchSpec defines the desired state of Search
             properties:
-              url:
+              index:
+                type: integer
+              locationIdentifier:
+                type: string
+              maxPrice:
+                type: integer
+              minBedrooms:
+                type: integer
+              mustHave:
+                type: string
+              propertyTypes:
                 type: string
             required:
-            - url
+            - locationIdentifier
             type: object
           status:
             description: SearchStatus defines the observed state of Search

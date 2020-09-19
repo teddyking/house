@@ -41,6 +41,7 @@ var _ = Describe("Search Controller", func() {
 			fakeScraper    *controllersfakes.FakeScraper
 
 			namespacedName types.NamespacedName
+			searchURL      string
 
 			reconciler      *SearchReconciler
 			reconcileResult ctrl.Result
@@ -68,10 +69,15 @@ var _ = Describe("Search Controller", func() {
 					Generation: 1,
 				},
 				Spec: v1alpha1.SearchSpec{
-					URL: "url-1",
+					LocationIdentifier: "location-id-1",
+					MinBedrooms:        2,
+					MaxPrice:           500000,
+					PropertyTypes:      "type-1",
+					MustHave:           "must-have-1",
 				},
 				Status: v1alpha1.SearchStatus{},
 			}
+			searchURL = search.Spec.URL()
 
 			Expect(fakeClient.Create(context.TODO(), search)).To(Succeed())
 
@@ -108,7 +114,7 @@ var _ = Describe("Search Controller", func() {
 			Expect(fakeScraper.PropertiesCallCount()).To(Equal(1))
 
 			passedURL := fakeScraper.PropertiesArgsForCall(0)
-			Expect(passedURL).To(Equal("url-1"))
+			Expect(passedURL).To(Equal(searchURL))
 		})
 
 		It("upserts House CRs from the scraped properties", func() {

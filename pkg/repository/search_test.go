@@ -44,7 +44,11 @@ var _ = Describe("Search", func() {
 					Namespace: namespace,
 				},
 				Spec: v1alpha1.SearchSpec{
-					URL: "url-1",
+					LocationIdentifier: "location-id-1",
+					MinBedrooms:        2,
+					MaxPrice:           500000,
+					PropertyTypes:      "type-1",
+					MustHave:           "must-have-1",
 				},
 				Status: v1alpha1.SearchStatus{},
 			}
@@ -64,7 +68,7 @@ var _ = Describe("Search", func() {
 				Expect(returnedErr).NotTo(HaveOccurred())
 
 				Expect(returnedSearch.Name).To(Equal(search.Name))
-				Expect(returnedSearch.Spec.URL).To(Equal(search.Spec.URL))
+				Expect(returnedSearch.Spec.LocationIdentifier).To(Equal(search.Spec.LocationIdentifier))
 			})
 		})
 

@@ -1,7 +1,10 @@
 apiVersion: house.teddyking.github.io/v1alpha1
 kind: Search
 metadata:
-  name: search-sample
+  name: rightmove-edinburgh-1
 spec:
-  # Add fields here
-  url: bar
+  locationIdentifier: REGION^475
+  minBedrooms: 2
+  maxPrice: 350000
+  propertyTypes: detached,semi-detached,terraced
+  mustHave: garden

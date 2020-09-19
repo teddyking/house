@@ -15,6 +15,10 @@ limitations under the License.
 package v1alpha1
 
 import (
+	"fmt"
+	"net/url"
+	"strconv"
+
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -32,7 +36,32 @@ type Search struct {
 
 // SearchSpec defines the desired state of Search
 type SearchSpec struct {
-	URL string `json:"url"`
+	LocationIdentifier string `json:"locationIdentifier"`
+	MinBedrooms        int    `json:"minBedrooms,omitempty"`
+	MaxPrice           int    `json:"maxPrice,omitempty"`
+	PropertyTypes      string `json:"propertyTypes,omitempty"`
+	MustHave           string `json:"mustHave,omitempty"`
+	Index              int    `json:"index,omitempty"`
+}
+
+func (s SearchSpec) URL() string {
+	v := url.Values{}
+
+	v.Set("locationIdentifier", s.LocationIdentifier)
+	v.Add("minBedrooms", strconv.Itoa(s.MinBedrooms))
+	v.Add("maxPrice", strconv.Itoa(s.MaxPrice))
+	v.Add("propertyTypes", s.PropertyTypes)
+	v.Add("mustHave", s.MustHave)
+	v.Add("index", strconv.Itoa(s.Index))
+
+	v.Add("sortType", "6")
+	v.Add("primaryDisplayPropertyType", "houses")
+	v.Add("includeSSTC", "false")
+	v.Add("dontShow", "sharedOwnership,retirement")
+	v.Add("furnishTypes", "")
+	v.Add("keywords", "")
+
+	return fmt.Sprintf("https://www.rightmove.co.uk/property-for-sale/find.html?%s", v.Encode())
 }
 
 // SearchStatus defines the observed state of Search

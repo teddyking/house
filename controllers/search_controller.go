@@ -73,7 +73,7 @@ func (r *SearchReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
 
-	properties, err := r.Scraper.Properties(search.Spec.URL)
+	properties, err := r.Scraper.Properties(search.Spec.URL())
 	if err != nil {
 		return ctrl.Result{}, err
 	}

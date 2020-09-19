@@ -16,17 +16,7 @@ spec:
     singular: house
   scope: Namespaced
   versions:
-  - additionalPrinterColumns:
-    - jsonPath: .spec.price
-      name: Price
-      type: string
-    - jsonPath: .spec.description
-      name: Description
-      type: string
-    - jsonPath: .spec.url
-      name: URL
-      type: string
-    name: v1alpha1
+  - name: v1alpha1
     schema:
       openAPIV3Schema:
         description: House is the Schema for the houses API
@@ -69,7 +59,6 @@ spec:
         type: object
     served: true
     storage: true
-    subresources: {}
 status:
   acceptedNames:
     kind: ""
