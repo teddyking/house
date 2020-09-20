@@ -3,6 +3,7 @@ package scrape
 import (
 	"encoding/json"
 	"fmt"
+	"regexp"
 	"strings"
 
 	"github.com/gocolly/colly"
@@ -18,13 +19,14 @@ type Result struct {
 }
 
 type Property struct {
-	ID          int      `json:"id"`
-	Type        string   `json:"propertySubType"`
-	Description string   `json:"propertyTypeFullDescription"`
-	Bedrooms    int      `json:"bedrooms"`
-	Location    Location `json:"location"`
-	Price       Price    `json:"price"`
-	URL         string   `json:"propertyUrl"`
+	ID             int      `json:"id"`
+	Type           string   `json:"propertySubType"`
+	Description    string   `json:"propertyTypeFullDescription"`
+	Bedrooms       int      `json:"bedrooms"`
+	Location       Location `json:"location"`
+	DisplayAddress string   `json:"displayAddress"`
+	Price          Price    `json:"price"`
+	URL            string   `json:"propertyUrl"`
 }
 
 type Location struct {
@@ -63,9 +65,19 @@ func (r RightMove) Properties(url string) ([]types.House, error) {
 			ID:          fmt.Sprint(property.ID),
 			Price:       fmt.Sprint(property.Price.Amount),
 			Description: property.Description,
+			Postcode:    postcodeFromDisplayAddress(property.DisplayAddress),
 			URL:         property.URL,
 		})
 	}
 
 	return houses, nil
+}
+
+func postcodeFromDisplayAddress(displayAddress string) string {
+	postcodeSegment := displayAddress[strings.LastIndex(displayAddress, ",")+1:]
+
+	re := regexp.MustCompile(`([A-Z]{1,2}[0-9][A-Z0-9]?)`)
+	matchedPostcode := re.Find([]byte(postcodeSegment))
+
+	return strings.TrimSpace(string(matchedPostcode))
 }
