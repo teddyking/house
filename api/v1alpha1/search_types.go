@@ -41,7 +41,6 @@ type SearchSpec struct {
 	MaxPrice           int    `json:"maxPrice,omitempty"`
 	PropertyTypes      string `json:"propertyTypes,omitempty"`
 	MustHave           string `json:"mustHave,omitempty"`
-	Index              int    `json:"index,omitempty"`
 }
 
 func (s SearchSpec) URL() string {
@@ -52,7 +51,6 @@ func (s SearchSpec) URL() string {
 	v.Add("maxPrice", strconv.Itoa(s.MaxPrice))
 	v.Add("propertyTypes", s.PropertyTypes)
 	v.Add("mustHave", s.MustHave)
-	v.Add("index", strconv.Itoa(s.Index))
 
 	v.Add("sortType", "6")
 	v.Add("primaryDisplayPropertyType", "houses")

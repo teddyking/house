@@ -30,7 +30,7 @@ var urlTests = []struct {
 		v1alpha1.SearchSpec{
 			LocationIdentifier: "REGION^475",
 		},
-		"https://www.rightmove.co.uk/property-for-sale/find.html?dontShow=sharedOwnership%2Cretirement&furnishTypes=&includeSSTC=false&index=0&keywords=&locationIdentifier=REGION%5E475&maxPrice=0&minBedrooms=0&mustHave=&primaryDisplayPropertyType=houses&propertyTypes=&sortType=6",
+		"https://www.rightmove.co.uk/property-for-sale/find.html?dontShow=sharedOwnership%2Cretirement&furnishTypes=&includeSSTC=false&keywords=&locationIdentifier=REGION%5E475&maxPrice=0&minBedrooms=0&mustHave=&primaryDisplayPropertyType=houses&propertyTypes=&sortType=6",
 	},
 	{
 		"with bedrooms",
@@ -38,7 +38,7 @@ var urlTests = []struct {
 			LocationIdentifier: "REGION^475",
 			MinBedrooms:        2,
 		},
-		"https://www.rightmove.co.uk/property-for-sale/find.html?dontShow=sharedOwnership%2Cretirement&furnishTypes=&includeSSTC=false&index=0&keywords=&locationIdentifier=REGION%5E475&maxPrice=0&minBedrooms=2&mustHave=&primaryDisplayPropertyType=houses&propertyTypes=&sortType=6",
+		"https://www.rightmove.co.uk/property-for-sale/find.html?dontShow=sharedOwnership%2Cretirement&furnishTypes=&includeSSTC=false&keywords=&locationIdentifier=REGION%5E475&maxPrice=0&minBedrooms=2&mustHave=&primaryDisplayPropertyType=houses&propertyTypes=&sortType=6",
 	},
 	{
 		"with propertyTypes",
@@ -47,7 +47,7 @@ var urlTests = []struct {
 			MinBedrooms:        2,
 			PropertyTypes:      "detached,semi-detached,terraced",
 		},
-		"https://www.rightmove.co.uk/property-for-sale/find.html?dontShow=sharedOwnership%2Cretirement&furnishTypes=&includeSSTC=false&index=0&keywords=&locationIdentifier=REGION%5E475&maxPrice=0&minBedrooms=2&mustHave=&primaryDisplayPropertyType=houses&propertyTypes=detached%2Csemi-detached%2Cterraced&sortType=6",
+		"https://www.rightmove.co.uk/property-for-sale/find.html?dontShow=sharedOwnership%2Cretirement&furnishTypes=&includeSSTC=false&keywords=&locationIdentifier=REGION%5E475&maxPrice=0&minBedrooms=2&mustHave=&primaryDisplayPropertyType=houses&propertyTypes=detached%2Csemi-detached%2Cterraced&sortType=6",
 	},
 	{
 		"with everything",
@@ -57,9 +57,8 @@ var urlTests = []struct {
 			MaxPrice:           500000,
 			PropertyTypes:      "detached,semi-detached,terraced",
 			MustHave:           "garden",
-			Index:              10,
 		},
-		"https://www.rightmove.co.uk/property-for-sale/find.html?dontShow=sharedOwnership%2Cretirement&furnishTypes=&includeSSTC=false&index=10&keywords=&locationIdentifier=REGION%5E475&maxPrice=500000&minBedrooms=2&mustHave=garden&primaryDisplayPropertyType=houses&propertyTypes=detached%2Csemi-detached%2Cterraced&sortType=6",
+		"https://www.rightmove.co.uk/property-for-sale/find.html?dontShow=sharedOwnership%2Cretirement&furnishTypes=&includeSSTC=false&keywords=&locationIdentifier=REGION%5E475&maxPrice=500000&minBedrooms=2&mustHave=garden&primaryDisplayPropertyType=houses&propertyTypes=detached%2Csemi-detached%2Cterraced&sortType=6",
 	},
 }
 

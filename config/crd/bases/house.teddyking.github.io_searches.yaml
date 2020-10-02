@@ -36,8 +36,6 @@ spec:
           spec:
             description: SearchSpec defines the desired state of Search
             properties:
-              index:
-                type: integer
               locationIdentifier:
                 type: string
               maxPrice:
